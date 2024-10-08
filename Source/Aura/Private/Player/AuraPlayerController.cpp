@@ -2,9 +2,9 @@
 
 
 #include "Player/AuraPlayerController.h"
-#include "EnhancedInputSubsystems.h"
-#include "EnhancedInputComponent.h"
 #include "Interaction/EnemyInterface.h"
+#include <EnhancedInputSubsystems.h>
+#include <Input/AuraInputComponent.h>
 
 AAuraPlayerController::AAuraPlayerController()
 {
@@ -76,6 +76,21 @@ void AAuraPlayerController::CursorTrace()
 	}
 }
 
+void AAuraPlayerController::AbilityTagPressed(FGameplayTag InputTag)
+{
+	GEngine->AddOnScreenDebugMessage(1, 3.f, FColor::Red, *InputTag.ToString());
+}
+
+void AAuraPlayerController::AbilityTagReleased(FGameplayTag InputTag)
+{
+	GEngine->AddOnScreenDebugMessage(2, 3.f, FColor::Blue, *InputTag.ToString());
+}
+
+void AAuraPlayerController::AbilityTagHeld(FGameplayTag InputTag)
+{
+	GEngine->AddOnScreenDebugMessage(3, 3.f, FColor::Green, *InputTag.ToString());
+}
+
 
 void AAuraPlayerController::BeginPlay()
 {
@@ -103,11 +118,9 @@ void AAuraPlayerController::SetupInputComponent()
 
 	InputComponent;
 
-	UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent);
-	if (EnhancedInputComponent)
-	{
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AAuraPlayerController::Move);
-	}
+	UAuraInputComponent* AuraInputComponent = CastChecked<UAuraInputComponent>(InputComponent);
+	AuraInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AAuraPlayerController::Move);
+	AuraInputComponent->BindAbilityActions(InputConfig, this, &ThisClass::AbilityTagPressed, &ThisClass::AbilityTagReleased, &ThisClass::AbilityTagHeld);
 }
 
 void AAuraPlayerController::Move(const FInputActionValue& InputActionValue)
